@@ -1,0 +1,4 @@
+path_for_tv_shows = "./data"
+podcasts = [
+    "https://kino.pub/podcast/get/7..."
+]
