@@ -19,6 +19,8 @@ type Episode struct {
 	BasePath       string
 }
 
+const episodePattern = `s(\d+)e(\d+)`
+
 func NewEpisode(title string, tvshow string, url string, basePath string) (*Episode, error) {
 	ep := Episode{
 		Title:          title,
@@ -84,6 +86,7 @@ func (e *Episode) Download() (bool, error) {
 	defer resp.Body.Close()
 
 	_, err = io.Copy(out, resp.Body)
+
 	return true, err
 }
 
@@ -92,11 +95,12 @@ func (e *Episode) makeSeasonDir() error {
 	if errors.Is(err, os.ErrExist) {
 		return nil
 	}
+
 	return err
 }
 
 func (e *Episode) parseSeasonNumber(title string) (int, error) {
-	r, _ := regexp.Compile(`s(\d+)e(\d+)`)
+	r := regexp.MustCompile(episodePattern)
 
 	match := r.FindAllStringSubmatch(title, 1)
 
@@ -110,7 +114,7 @@ func (e *Episode) parseSeasonNumber(title string) (int, error) {
 }
 
 func (e *Episode) parseEpisodeNumber(title string) (int, error) {
-	r, _ := regexp.Compile(`s(\d+)e(\d+)`)
+	r := regexp.MustCompile(episodePattern)
 
 	match := r.FindAllStringSubmatch(title, 1)
 
