@@ -9,3 +9,6 @@ clean:
 
 attach:
 	docker run --rm -it -v $(shell pwd):/app/ --name kinopub-downloader --entrypoint 'sh' kinopub-downloader:local
+
+test:
+	go test -v ./...
