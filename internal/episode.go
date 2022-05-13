@@ -94,7 +94,7 @@ func (e *Episode) Download() (bool, error) {
 func (e *Episode) pathEscape(path string) string {
 	path = strings.ReplaceAll(path, "/", " ")
 
-	reg := regexp.MustCompile("[\\s]+")
+	reg := regexp.MustCompile(`[\s]+`)
 	path = reg.ReplaceAllString(path, " ")
 
 	return path
