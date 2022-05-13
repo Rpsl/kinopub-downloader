@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type Episode struct {
@@ -49,7 +50,7 @@ func NewEpisode(title string, tvshow string, url string, basePath string) (*Epis
 }
 
 func (e *Episode) GetPath() string {
-	return fmt.Sprintf("%s/%s/Season %02d/%s.mp4", e.BasePath, e.TVShow, e.SeasonNumber, e.Title)
+	return fmt.Sprintf("%s/%s/Season %02d/%s.mp4", e.BasePath, e.pathEscape(e.TVShow), e.SeasonNumber, e.pathEscape(e.Title))
 }
 
 func (e *Episode) IsDownloaded() bool {
@@ -88,6 +89,15 @@ func (e *Episode) Download() (bool, error) {
 	_, err = io.Copy(out, resp.Body)
 
 	return true, err
+}
+
+func (e *Episode) pathEscape(path string) string {
+	path = strings.ReplaceAll(path, "/", " ")
+
+	reg := regexp.MustCompile(`[\s]+`)
+	path = reg.ReplaceAllString(path, " ")
+
+	return path
 }
 
 func (e *Episode) makeSeasonDir() error {
