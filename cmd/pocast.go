@@ -20,11 +20,13 @@ func Podcast(config *config.Config) {
 		for _, ep := range pod.Items {
 			// todo extract title's routines in separate functions
 			show := ""
-			if pod.Subtitle != "" {
+
+			switch {
+			case pod.Subtitle != "":
 				show = pod.Subtitle
-			} else if pod.Title != "" {
+			case pod.Title != "":
 				show = pod.Title
-			} else {
+			default:
 				log.Errorf("can't detech show name for %s", podcast)
 				continue
 			}
@@ -36,7 +38,7 @@ func Podcast(config *config.Config) {
 				continue
 			}
 
-			if episode.IsDownloaded() == false {
+			if !episode.IsDownloaded() {
 				log.Infof("marked for download :: %s - %s", pod.Subtitle, ep.Title)
 
 				// need to move into queue implementation
@@ -44,7 +46,7 @@ func Podcast(config *config.Config) {
 
 				if err != nil {
 					log.Error(err)
-				} else if res == true {
+				} else if res {
 					log.Infof("downloaded :: %s - %s", pod.Subtitle, ep.Title)
 				}
 			}
