@@ -12,3 +12,6 @@ attach:
 
 test:
 	go test -v ./...
+
+mod-update:
+	go get -u && go mod tidy
