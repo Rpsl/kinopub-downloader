@@ -27,3 +27,24 @@ func TestNewEpisode_WithSlash(t *testing.T) {
 
 	assert.Nil(t, err)
 }
+
+func TestNewEpisode_WithoutTitle(t *testing.T) {
+	ep, err := NewEpisode("", "Close /Enough", "https://example.com/1.mp4", "/data")
+
+	assert.Nil(t, ep, "episode object must be empty")
+	assert.Error(t, err, "episode with empty title must return error")
+}
+
+func TestNewEpisode_WithoutShow(t *testing.T) {
+	ep, err := NewEpisode("s03e01 - Where the Buffalo Roam/Venice Vengeance", "", "https://example.com/1.mp4", "/data")
+
+	assert.Nil(t, ep, "episode object must be empty")
+	assert.Error(t, err, "episode with empty show must return error")
+}
+
+func TestNewEpisode_WithoutUrl(t *testing.T) {
+	ep, err := NewEpisode("s03e01 - Where the Buffalo Roam/Venice Vengeance", "Close /Enough", "", "/data")
+
+	assert.Nil(t, ep, "episode object must be empty")
+	assert.Error(t, err, "episode with empty url must return error")
+}
