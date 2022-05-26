@@ -12,3 +12,9 @@ attach:
 
 test:
 	go test -v ./...
+
+lint:
+	golangci-lint run --out-format=github-actions
+
+mod-update:
+	go get -u && go mod tidy

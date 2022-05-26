@@ -13,7 +13,7 @@ import (
 
 type Episode struct {
 	Title          string
-	TVShow         string
+	Show           string
 	EpisodeNumber  int
 	SeasonNumber   int
 	URLForDownload string
@@ -22,10 +22,19 @@ type Episode struct {
 
 const episodePattern = `s(\d+)e(\d+)`
 
-func NewEpisode(title string, tvshow string, url string, basePath string) (*Episode, error) {
+func NewEpisode(title string, show string, url string, basePath string) (*Episode, error) {
+	switch {
+	case title == "":
+		return nil, errors.New("can't process episode without title")
+	case show == "":
+		return nil, errors.New("can't process episode without show title")
+	case url == "":
+		return nil, errors.New("can't process episode without url")
+	}
+
 	ep := Episode{
 		Title:          title,
-		TVShow:         tvshow,
+		Show:           show,
 		URLForDownload: url,
 		BasePath:       basePath,
 	}
@@ -50,17 +59,13 @@ func NewEpisode(title string, tvshow string, url string, basePath string) (*Epis
 }
 
 func (e *Episode) GetPath() string {
-	return fmt.Sprintf("%s/%s/Season %02d/%s.mp4", e.BasePath, e.pathEscape(e.TVShow), e.SeasonNumber, e.pathEscape(e.Title))
+	return fmt.Sprintf("%s/%s/Season %02d/%s.mp4", e.BasePath, e.pathEscape(e.Show), e.SeasonNumber, e.pathEscape(e.Title))
 }
 
 func (e *Episode) IsDownloaded() bool {
 	_, err := os.Stat(e.GetPath())
 
-	if errors.Is(err, os.ErrNotExist) {
-		return false
-	}
-
-	return true
+	return !errors.Is(err, os.ErrNotExist)
 }
 
 func (e *Episode) GetURL() string {
@@ -94,14 +99,14 @@ func (e *Episode) Download() (bool, error) {
 func (e *Episode) pathEscape(path string) string {
 	path = strings.ReplaceAll(path, "/", " ")
 
-	reg := regexp.MustCompile(`[\s]+`)
+	reg := regexp.MustCompile(`\s+`)
 	path = reg.ReplaceAllString(path, " ")
 
 	return path
 }
 
 func (e *Episode) makeSeasonDir() error {
-	err := os.MkdirAll(fmt.Sprintf("%s/%s/Season %02d", e.BasePath, e.TVShow, e.SeasonNumber), os.ModePerm)
+	err := os.MkdirAll(fmt.Sprintf("%s/%s/Season %02d", e.BasePath, e.Show, e.SeasonNumber), os.ModePerm)
 	if errors.Is(err, os.ErrExist) {
 		return nil
 	}
@@ -120,7 +125,7 @@ func (e *Episode) parseSeasonNumber(title string) (int, error) {
 		return n, err
 	}
 
-	return 0, errors.New(fmt.Sprintf("can't parse season number from title %s", title))
+	return 0, fmt.Errorf("can't parse season number from title %s", title)
 }
 
 func (e *Episode) parseEpisodeNumber(title string) (int, error) {
@@ -134,5 +139,5 @@ func (e *Episode) parseEpisodeNumber(title string) (int, error) {
 		return n, err
 	}
 
-	return 0, errors.New(fmt.Sprintf("can't parse episode number from title %s", title))
+	return 0, fmt.Errorf("can't parse episode number from title %s", title)
 }
