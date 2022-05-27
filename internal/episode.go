@@ -8,6 +8,8 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Episode struct {
@@ -67,6 +69,7 @@ func (e *Episode) GetURL() string {
 }
 
 func (e *Episode) Download() (bool, error) {
+	log.Infof("start downloading - %s - %s", e.TVShow, e.Title)
 	// todo need extract download engine into independent implementation
 	err := e.makeSeasonDir()
 	if err != nil {
