@@ -12,8 +12,8 @@ import (
 )
 
 func Podcast(ctx context.Context) {
-	cfg := ctx.Value("cfg").(*config.Config)
-	queue := ctx.Value("queue").(*internal.Queue)
+	cfg := ctx.Value(internal.CtxCfgKey).(*config.Config)
+	queue := ctx.Value(internal.CtxQueueKey).(*internal.Queue)
 
 	// for first update on starting program
 	updateFeeds(cfg, queue)
