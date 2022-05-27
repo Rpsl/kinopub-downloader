@@ -21,7 +21,7 @@ func main() {
 		TimestampFormat: time.RFC3339,
 		FullTimestamp:   true,
 	})
-	// log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.DebugLevel)
 
 	cfg, err := config.LoadConfig()
 
@@ -30,20 +30,24 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
+
 	wg.Add(2)
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "cfg", cfg)
 	ctx = context.WithValue(ctx, "wg", &wg)
 	ctx = context.WithValue(ctx, "queue", internal.NewQueue())
-	ctx, stop := signal.NotifyContext(ctx, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(ctx, syscall.SIGTERM, syscall.SIGINT)
+
 	defer stop()
 
 	go runCli(ctx)
 	go runQueue(ctx)
 
 	wg.Wait()
-	fmt.Println("Done!")
+
+	<-ctx.Done()
+	fmt.Println("shutting down gracefully, press Ctrl+C again to force")
 }
 
 func runCli(ctx context.Context) {
@@ -59,6 +63,7 @@ func runCli(ctx context.Context) {
 	})
 
 	app.Run(os.Args)
+	log.Debugf("runCLI finished")
 }
 
 func runQueue(ctx context.Context) {
@@ -66,15 +71,8 @@ func runQueue(ctx context.Context) {
 	defer wg.Done()
 
 	log.Infoln("starting queue")
+
 	queue := ctx.Value("queue").(*internal.Queue)
-
-	// todo will run endless because runCLI run only once
-
-	select {
-	case <-ctx.Done():
-		log.Infoln("all workers finished")
-	default:
-		queue.Work()
-	}
-
+	queue.Work(ctx)
+	log.Debugf("runQueue finished")
 }

@@ -57,11 +57,7 @@ func (e *Episode) GetPath() string {
 func (e *Episode) IsDownloaded() bool {
 	_, err := os.Stat(e.GetPath())
 
-	if errors.Is(err, os.ErrNotExist) {
-		return false
-	}
-
-	return true
+	return !errors.Is(err, os.ErrNotExist)
 }
 
 func (e *Episode) GetURL() string {
@@ -113,7 +109,7 @@ func (e *Episode) parseSeasonNumber(title string) (int, error) {
 		return n, err
 	}
 
-	return 0, errors.New(fmt.Sprintf("can't parse season number from title %s", title))
+	return 0, fmt.Errorf("can't parse season number from title %s", title)
 }
 
 func (e *Episode) parseEpisodeNumber(title string) (int, error) {
@@ -127,5 +123,5 @@ func (e *Episode) parseEpisodeNumber(title string) (int, error) {
 		return n, err
 	}
 
-	return 0, errors.New(fmt.Sprintf("can't parse episode number from title %s", title))
+	return 0, fmt.Errorf("can't parse episode number from title %s", title)
 }

@@ -1,4 +1,7 @@
 path_for_tv_shows = "./data"
+
+# update podcast feeds every N hours
+hours_to_refresh = 1
 podcasts = [
     "https://kino.pub/podcast/get/7..."
 ]

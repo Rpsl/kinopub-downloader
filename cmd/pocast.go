@@ -2,18 +2,40 @@ package cmd
 
 import (
 	"context"
+	"time"
 
 	"github.com/rpsl/kinopub-downloader/internal"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/nandosousafr/podfeed"
-
 	"github.com/rpsl/kinopub-downloader/config"
 )
 
 func Podcast(ctx context.Context) {
 	cfg := ctx.Value("cfg").(*config.Config)
 	queue := ctx.Value("queue").(*internal.Queue)
+
+	// for first update on starting program
+	updateFeeds(cfg, queue)
+
+	timer := time.NewTimer(time.Hour * time.Duration(cfg.HoursToRefresh))
+	defer timer.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-timer.C:
+			if !timer.Stop() {
+				updateFeeds(cfg, queue)
+				timer.Reset(time.Hour * time.Duration(cfg.HoursToRefresh))
+			}
+		}
+	}
+}
+
+func updateFeeds(cfg *config.Config, queue *internal.Queue) {
+	log.Debugf("star updating all feeds")
 
 	for _, podcast := range cfg.Podcasts {
 		pod, err := podfeed.Fetch(podcast)
@@ -33,15 +55,7 @@ func Podcast(ctx context.Context) {
 			if !episode.IsDownloaded() {
 				log.Infof("marked for download :: %s - %s", pod.Subtitle, ep.Title)
 
-				// need to move into queue implementation
-				// res, err := episode.Download()
 				queue.Put(episode)
-
-				// if err != nil {
-				// 	log.Error(err)
-				// } else if res == true {
-				// 	log.Infof("downloaded :: %s - %s", pod.Subtitle, ep.Title)
-				// }
 			}
 		}
 	}
