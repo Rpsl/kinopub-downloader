@@ -45,7 +45,6 @@ func updateFeeds(cfg *config.Config, queue *internal.Queue) {
 		}
 
 		for _, ep := range pod.Items {
-
 			// todo extract title's routines in separate functions
 			show := ""
 
@@ -59,7 +58,7 @@ func updateFeeds(cfg *config.Config, queue *internal.Queue) {
 				continue
 			}
 
-			episode, err := internal.NewEpisode(ep.Title, show, ep.Enclosure.Url, config.PathForTVShows)
+			episode, err := internal.NewEpisode(ep.Title, show, ep.Enclosure.Url, cfg.PathForTVShows)
 
 			if err != nil {
 				log.Errorf("error processing %s - %s :: %s", pod.Subtitle, ep.Title, err)

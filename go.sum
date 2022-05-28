@@ -5,8 +5,6 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/jawher/mow.cli v1.2.0 h1:e6ViPPy+82A/NFF/cfbq3Lr6q4JHKT9tyHwTCcUQgQw=
 github.com/jawher/mow.cli v1.2.0/go.mod h1:y+pcA3jBAdo/GIZx/0rFjw/K2bVEODP9rfZOfaiq8Ko=
-github.com/marusama/d v0.0.0-20181202014630-ca14247c663b h1:jmcpdB5PnGHls4LoiKaSXFs4mvBnx3pN5J7/8G/ElzU=
-github.com/marusama/d v0.0.0-20181202014630-ca14247c663b/go.mod h1:nRj+WkUS5+g2JmjPGcwwOQkGmF/R2NnDSpnpCyYADec=
 github.com/nandosousafr/podfeed v0.0.0-20190404135022-b0fe4a5be2b5 h1:yVbTLE3Qd6KZGcxkB4g3gDf/vKEKjNIoaKnMIEb9vVw=
 github.com/nandosousafr/podfeed v0.0.0-20190404135022-b0fe4a5be2b5/go.mod h1:ScbgdAUdFziTcEjepPXKmt+S+I08iEZP1Kn7V2TNWWY=
 github.com/oleiade/lane v1.0.1 h1:hXofkn7GEOubzTwNpeL9MaNy8WxolCYb9cInAIeqShU=

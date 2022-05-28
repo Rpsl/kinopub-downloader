@@ -87,7 +87,7 @@ func parsePriority(episode *Episode) int64 {
 	priority, err := strconv.ParseInt(fmt.Sprintf("%d0%d", episode.SeasonNumber, episode.EpisodeNumber), 10, 64)
 
 	if err != nil {
-		log.Warnf("can't parse priority for queue from %s - %s", episode.TVShow, episode.Title)
+		log.Warnf("can't parse priority for queue from %s - %s", episode.Show, episode.Title)
 
 		priority = 999
 	}
@@ -99,10 +99,10 @@ func worker(ctx context.Context, episode *Episode) {
 	ok, err := episode.Download(ctx)
 
 	if err != nil {
-		log.WithError(err).Errorf("can't download episode %s - %s", episode.TVShow, episode.Title)
+		log.WithError(err).Errorf("can't download episode %s - %s", episode.Show, episode.Title)
 	}
 
 	if ok {
-		log.Infof("downloaded :: %s - %s", episode.TVShow, episode.Title)
+		log.Infof("downloaded :: %s - %s", episode.Show, episode.Title)
 	}
 }

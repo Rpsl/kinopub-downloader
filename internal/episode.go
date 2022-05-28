@@ -76,7 +76,7 @@ func (e *Episode) GetURL() string {
 }
 
 func (e *Episode) Download(ctx context.Context) (bool, error) {
-	log.Infof("[+++] start downloading - \"%s - %s\" into \"%s\"", e.TVShow, e.Title, e.GetPath())
+	log.Infof("[+++] start downloading - \"%s - %s\" into \"%s\"", e.Show, e.Title, e.GetPath())
 
 	// todo need extract download engine into independent implementation
 	err := e.makeSeasonDir()
@@ -98,7 +98,7 @@ func (e *Episode) Download(ctx context.Context) (bool, error) {
 
 	if urlErr != nil {
 		e.removeTempFile(file)
-		log.WithError(urlErr).Errorf("error while doing request - \"%s - %s\"", e.TVShow, e.Title)
+		log.WithError(urlErr).Errorf("error while doing request - \"%s - %s\"", e.Show, e.Title)
 
 		return false, urlErr
 	}
@@ -108,7 +108,7 @@ func (e *Episode) Download(ctx context.Context) (bool, error) {
 
 	if err != nil {
 		e.removeTempFile(file)
-		log.WithError(err).Errorf("error while downloading - \"%s - %s\"", e.TVShow, e.Title)
+		log.WithError(err).Errorf("error while downloading - \"%s - %s\"", e.Show, e.Title)
 	}
 
 	return true, err
