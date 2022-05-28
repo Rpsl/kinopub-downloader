@@ -6,9 +6,10 @@ import (
 )
 
 type Config struct {
-	Podcasts       []string `toml:"podcasts"`
-	PathForTVShows string   `toml:"path_for_tv_shows"`
-	HoursToRefresh int      `toml:"hours_to_refresh"`
+	Podcasts             []string `toml:"podcasts"`
+	PathForTVShows       string   `toml:"path_for_tv_shows"`
+	HoursToRefresh       int      `toml:"hours_to_refresh"`
+	ConcurrencyDownloads int      `toml:"concurrency_downloads"`
 }
 
 const PathConfig string = "config.toml"

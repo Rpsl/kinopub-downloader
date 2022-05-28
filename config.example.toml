@@ -1,4 +1,5 @@
 path_for_tv_shows = "./data"
+concurrency_downloads = 3
 
 # update podcast feeds every N hours
 hours_to_refresh = 1

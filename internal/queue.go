@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/oleiade/lane"
 	"github.com/remeh/sizedwaitgroup"
+	"github.com/rpsl/kinopub-downloader/config"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -33,36 +33,58 @@ func (q *Queue) Put(episode *Episode) {
 }
 
 func (q *Queue) Work(ctx context.Context) {
-	var swg = sizedwaitgroup.New(2)
+	cfg := ctx.Value(CtxCfgKey).(*config.Config)
+	swg := sizedwaitgroup.New(cfg.ConcurrencyDownloads)
+
+	qChannel := make(chan interface{}, cfg.ConcurrencyDownloads)
+
+	go q.fillQueue(ctx, qChannel)
 
 	for {
 		select {
 		case <-ctx.Done():
+			// need to wait workers for graceful shutdown and deleting  temporary files
+			swg.Wait()
 			log.Infoln("all workers finished")
+
+			return
+		case item := <-qChannel:
+			ep := item.(*Episode)
+
+			swg.Add()
+
+			go func() {
+				log.Debugln("Worker is started")
+
+				defer swg.Done()
+
+				worker(ctx, ep)
+				log.Debugln("Worker finished")
+			}()
+		}
+	}
+}
+
+func (q *Queue) fillQueue(ctx context.Context, qChannel chan interface{}) {
+	cfg := ctx.Value(CtxCfgKey).(*config.Config)
+
+	for {
+		select {
+		case <-ctx.Done():
 			return
 		default:
-			log.Debugf("waiting for queueu")
-
-			for q.q.Size() > 0 {
+			if q.q.Size() > 0 && len(qChannel) < cfg.ConcurrencyDownloads {
 				log.Debugf("queue have %d items", q.q.Size())
+
 				item, _ := q.q.Pop()
-				ep := item.(*Episode)
-
-				swg.Add()
-
-				go worker(ep, &swg)
+				qChannel <- item
 			}
-			swg.Wait()
-
-			time.Sleep(time.Second)
 		}
 	}
 }
 
 func parsePriority(episode *Episode) int64 {
 	priority, err := strconv.ParseInt(fmt.Sprintf("%d0%d", episode.SeasonNumber, episode.EpisodeNumber), 10, 64)
-
-	log.Debugf("%s - priority is: %d", episode.Title, priority)
 
 	if err != nil {
 		log.Warnf("can't parse priority for queue from %s - %s", episode.TVShow, episode.Title)
@@ -73,8 +95,8 @@ func parsePriority(episode *Episode) int64 {
 	return priority
 }
 
-func worker(episode *Episode, swg *sizedwaitgroup.SizedWaitGroup) {
-	ok, err := episode.Download()
+func worker(ctx context.Context, episode *Episode) {
+	ok, err := episode.Download(ctx)
 
 	if err != nil {
 		log.WithError(err).Errorf("can't download episode %s - %s", episode.TVShow, episode.Title)
@@ -83,6 +105,4 @@ func worker(episode *Episode, swg *sizedwaitgroup.SizedWaitGroup) {
 	if ok {
 		log.Infof("downloaded :: %s - %s", episode.TVShow, episode.Title)
 	}
-
-	swg.Done()
 }

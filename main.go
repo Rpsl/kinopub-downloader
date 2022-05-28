@@ -21,7 +21,7 @@ func main() {
 		TimestampFormat: time.RFC3339,
 		FullTimestamp:   true,
 	})
-	log.SetLevel(log.DebugLevel)
+	// log.SetLevel(log.DebugLevel)
 
 	cfg, err := config.LoadConfig()
 
