@@ -1,10 +1,10 @@
-build-local:
+build-bin:
 	go build -o ./build/kinopub-downloader ./main.go
 
 build-docker:
 	docker build -t kinopub-downloader:local .
 
-clean:
+build-clean:
 	rm -rf ./build
 
 attach:

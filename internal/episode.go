@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +10,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Episode struct {
@@ -72,28 +75,49 @@ func (e *Episode) GetURL() string {
 	return e.URLForDownload
 }
 
-func (e *Episode) Download() (bool, error) {
+func (e *Episode) Download(ctx context.Context) (bool, error) {
+	log.Infof("[+++] start downloading - \"%s - %s\" into \"%s\"", e.Show, e.Title, e.GetPath())
+
 	// todo need extract download engine into independent implementation
 	err := e.makeSeasonDir()
 	if err != nil {
+		log.WithError(err).Errorf("can't create season dir: \"%s\"", e.GetPath())
 		return false, err
 	}
 
-	out, err := os.Create(e.GetPath())
+	file, err := os.Create(e.GetPath())
 	if err != nil {
+		log.WithError(err).Errorf("can't create episode file: \"%s\"", e.GetPath())
 		return false, err
 	}
-	defer out.Close()
+	defer file.Close()
 
-	resp, err := http.Get(e.URLForDownload)
-	if err != nil {
-		return false, err
+	// todo check file length
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, e.URLForDownload, nil)
+	resp, urlErr := http.DefaultClient.Do(req)
+
+	if urlErr != nil {
+		e.removeTempFile(file)
+		log.WithError(urlErr).Errorf("error while doing request - \"%s - %s\"", e.Show, e.Title)
+
+		return false, urlErr
 	}
 	defer resp.Body.Close()
 
-	_, err = io.Copy(out, resp.Body)
+	_, err = io.Copy(file, resp.Body)
+
+	if err != nil {
+		e.removeTempFile(file)
+		log.WithError(err).Errorf("error while downloading - \"%s - %s\"", e.Show, e.Title)
+	}
 
 	return true, err
+}
+
+func (e *Episode) removeTempFile(file *os.File) {
+	// remove incomplete file when caught error
+	file.Close()
+	os.Remove(e.GetPath())
 }
 
 func (e *Episode) pathEscape(path string) string {
@@ -125,7 +149,7 @@ func (e *Episode) parseSeasonNumber(title string) (int, error) {
 		return n, err
 	}
 
-	return 0, fmt.Errorf("can't parse season number from title %s", title)
+	return 0, fmt.Errorf("can't parse season number from title \"%s\"", title)
 }
 
 func (e *Episode) parseEpisodeNumber(title string) (int, error) {
@@ -139,5 +163,5 @@ func (e *Episode) parseEpisodeNumber(title string) (int, error) {
 		return n, err
 	}
 
-	return 0, fmt.Errorf("can't parse episode number from title %s", title)
+	return 0, fmt.Errorf("can't parse episode number from title \"%s\"", title)
 }
