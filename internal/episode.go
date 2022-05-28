@@ -16,7 +16,7 @@ import (
 
 type Episode struct {
 	Title          string
-	TVShow         string
+	Show           string
 	EpisodeNumber  int
 	SeasonNumber   int
 	URLForDownload string
@@ -25,10 +25,19 @@ type Episode struct {
 
 const episodePattern = `s(\d+)e(\d+)`
 
-func NewEpisode(title string, tvshow string, url string, basePath string) (*Episode, error) {
+func NewEpisode(title string, show string, url string, basePath string) (*Episode, error) {
+	switch {
+	case title == "":
+		return nil, errors.New("can't process episode without title")
+	case show == "":
+		return nil, errors.New("can't process episode without show title")
+	case url == "":
+		return nil, errors.New("can't process episode without url")
+	}
+
 	ep := Episode{
 		Title:          title,
-		TVShow:         tvshow,
+		Show:           show,
 		URLForDownload: url,
 		BasePath:       basePath,
 	}
@@ -53,7 +62,7 @@ func NewEpisode(title string, tvshow string, url string, basePath string) (*Epis
 }
 
 func (e *Episode) GetPath() string {
-	return fmt.Sprintf("%s/%s/Season %02d/%s.mp4", e.BasePath, e.pathEscape(e.TVShow), e.SeasonNumber, e.pathEscape(e.Title))
+	return fmt.Sprintf("%s/%s/Season %02d/%s.mp4", e.BasePath, e.pathEscape(e.Show), e.SeasonNumber, e.pathEscape(e.Title))
 }
 
 func (e *Episode) IsDownloaded() bool {
@@ -121,7 +130,7 @@ func (e *Episode) pathEscape(path string) string {
 }
 
 func (e *Episode) makeSeasonDir() error {
-	err := os.MkdirAll(fmt.Sprintf("%s/%s/Season %02d", e.BasePath, e.TVShow, e.SeasonNumber), os.ModePerm)
+	err := os.MkdirAll(fmt.Sprintf("%s/%s/Season %02d", e.BasePath, e.Show, e.SeasonNumber), os.ModePerm)
 	if errors.Is(err, os.ErrExist) {
 		return nil
 	}

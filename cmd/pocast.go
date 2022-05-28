@@ -45,7 +45,21 @@ func updateFeeds(cfg *config.Config, queue *internal.Queue) {
 		}
 
 		for _, ep := range pod.Items {
-			episode, err := internal.NewEpisode(ep.Title, pod.Subtitle, ep.Enclosure.Url, cfg.PathForTVShows)
+
+			// todo extract title's routines in separate functions
+			show := ""
+
+			switch {
+			case pod.Subtitle != "":
+				show = pod.Subtitle
+			case pod.Title != "":
+				show = pod.Title
+			default:
+				log.Errorf("can't detech show name for %s", podcast)
+				continue
+			}
+
+			episode, err := internal.NewEpisode(ep.Title, show, ep.Enclosure.Url, config.PathForTVShows)
 
 			if err != nil {
 				log.Errorf("error processing %s - %s :: %s", pod.Subtitle, ep.Title, err)
