@@ -2,8 +2,6 @@ package internal
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 
 	"github.com/oleiade/lane"
 	"github.com/remeh/sizedwaitgroup"
@@ -27,9 +25,7 @@ func NewQueue() *Queue {
 }
 
 func (q *Queue) Put(episode *Episode) {
-	priority := parsePriority(episode)
-
-	q.q.Push(episode, int(priority))
+	q.q.Push(episode, episode.GetPriority())
 }
 
 func (q *Queue) Work(ctx context.Context) {
@@ -65,6 +61,7 @@ func (q *Queue) Work(ctx context.Context) {
 	}
 }
 
+// todo: need to rename or rework that function because name is confusing
 func (q *Queue) fillQueue(ctx context.Context, qChannel chan interface{}) {
 	cfg := ctx.Value(CtxCfgKey).(*config.Config)
 
@@ -81,18 +78,6 @@ func (q *Queue) fillQueue(ctx context.Context, qChannel chan interface{}) {
 			}
 		}
 	}
-}
-
-func parsePriority(episode *Episode) int64 {
-	priority, err := strconv.ParseInt(fmt.Sprintf("%d0%d", episode.SeasonNumber, episode.EpisodeNumber), 10, 64)
-
-	if err != nil {
-		log.Warnf("can't parse priority for queue from %s - %s", episode.Show, episode.Title)
-
-		priority = 999
-	}
-
-	return priority
 }
 
 func worker(ctx context.Context, episode *Episode) {

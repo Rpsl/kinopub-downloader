@@ -75,6 +75,18 @@ func (e *Episode) GetURL() string {
 	return e.URLForDownload
 }
 
+func (e *Episode) GetPriority() int {
+	priority, err := strconv.ParseInt(fmt.Sprintf("%d0%d", e.SeasonNumber, e.EpisodeNumber), 10, 64)
+
+	if err != nil {
+		log.Warnf("can't parse priority for queue from %s - %s", e.Show, e.Title)
+
+		priority = 999
+	}
+
+	return int(priority)
+}
+
 func (e *Episode) Download(ctx context.Context) (bool, error) {
 	log.Infof("[+++] start downloading - \"%s - %s\" into \"%s\"", e.Show, e.Title, e.GetPath())
 
@@ -141,11 +153,10 @@ func (e *Episode) makeSeasonDir() error {
 func (e *Episode) parseSeasonNumber(title string) (int, error) {
 	r := regexp.MustCompile(episodePattern)
 
-	match := r.FindAllStringSubmatch(title, 1)
+	match := r.FindStringSubmatch(title)
 
-	// todo it's look like shit
-	if len(match) > 0 && len(match[0]) > 0 {
-		n, err := strconv.Atoi(match[0][1])
+	if len(match) > 0 {
+		n, err := strconv.Atoi(match[1])
 		return n, err
 	}
 
@@ -155,11 +166,10 @@ func (e *Episode) parseSeasonNumber(title string) (int, error) {
 func (e *Episode) parseEpisodeNumber(title string) (int, error) {
 	r := regexp.MustCompile(episodePattern)
 
-	match := r.FindAllStringSubmatch(title, 1)
+	match := r.FindStringSubmatch(title)
 
-	// todo it's look like shit
-	if len(match) > 0 && len(match[0]) > 1 {
-		n, err := strconv.Atoi(match[0][2])
+	if len(match) > 0 {
+		n, err := strconv.Atoi(match[2])
 		return n, err
 	}
 
