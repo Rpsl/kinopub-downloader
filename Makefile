@@ -1,5 +1,5 @@
 build-bin:
-	go build -o ./build/kinopub-downloader ./main.go
+	go build -ldflags "-s -w" -o ./build/kinopub-downloader ./main.go
 
 build-docker:
 	docker build -t kinopub-downloader:local .

@@ -10,7 +10,7 @@ COPY . .
 RUN go mod download
 RUN go mod verify
 
-RUN export CGO_ENABLED=0 && go build -o /kinopub-downloader ./main.go
+RUN export CGO_ENABLED=0 && go build -ldflags "-s -w" -o /kinopub-downloader ./main.go
 
 ##
 ## Production
